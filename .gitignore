@@ -1,0 +1,10 @@
+/node_modules/
+/public/build/
+
+.DS_Store
+
+package-lock.json
+
+match_data/*.csv
+
+public/data/*.json 
