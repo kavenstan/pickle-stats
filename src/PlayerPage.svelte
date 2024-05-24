@@ -1,5 +1,6 @@
 <script>
 	import { onMount } from 'svelte';
+	import { baseUrl } from './config';
 	export let params;
 
 	let playerStats = {};
@@ -10,7 +11,7 @@
 	let opponentStats = [];
 
 	onMount(async () => {
-		const res = await fetch(`/data/player_stats.json`);
+		const res = await fetch(`${baseUrl}/player_stats.json`);
 		const stats = await res.json();
 		playerStats = stats[playerName] || {};
 		matchHistory = playerStats.rating_history || [];
@@ -78,11 +79,11 @@
 					</tr>
 				</thead>
 				<tbody>
-					{#each matchHistory as match}
+					{#each matchHistory.reverse() as match}
 						<tr>
 							<td>{match.date}</td>
 							<td>{match.partner}</td>
-							<td>{match.score}</td>
+							<td>{match.score} - {match.opponent_score}</td>
 							<td>{match.opponents.join(', ')}</td>
 							<td>{match.rating}</td>
 							<td>{match.rating_change}</td>

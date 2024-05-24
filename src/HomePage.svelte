@@ -1,10 +1,14 @@
 <script>
 	import { onMount } from 'svelte';
+	import { baseUrl, useLocal } from './config';
 
 	let playerRatings = [];
 
+	console.log(`Use Local: ${useLocal}`);
+	console.log(`Base URL: ${baseUrl}`);
+
 	onMount(async () => {
-		const ratingsRes = await fetch('/data/player_ratings.json');
+		const ratingsRes = await fetch(`${baseUrl}/player_ratings.json`);
 		playerRatings = await ratingsRes.json();
 	});
 

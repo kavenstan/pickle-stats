@@ -1,10 +1,14 @@
 import { spawn } from 'child_process';
 import svelte from 'rollup-plugin-svelte';
 import commonjs from '@rollup/plugin-commonjs';
+import replace from '@rollup/plugin-replace';
+import dotenv from 'dotenv';
 import terser from '@rollup/plugin-terser';
 import resolve from '@rollup/plugin-node-resolve';
 import livereload from 'rollup-plugin-livereload';
 import css from 'rollup-plugin-css-only';
+
+dotenv.config();
 
 const production = !process.env.ROLLUP_WATCH;
 
@@ -59,6 +63,12 @@ export default {
 			exportConditions: ['svelte']
 		}),
 		commonjs(),
+		replace({
+			'USE_LOCAL': JSON.stringify(process.env.USE_LOCAL),
+			'LOCAL_BASE_URL': JSON.stringify(process.env.LOCAL_BASE_URL),
+			'S3_BASE_URL': JSON.stringify(process.env.S3_BASE_URL),
+			preventAssignment: true // Add this to prevent errors with newer versions of rollup-plugin-replace
+		}),
 
 		// In dev mode, call `npm run start` once
 		// the bundle has been generated
