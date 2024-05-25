@@ -1,7 +1,7 @@
 <script>
 	export let matchHistory = [];
 	export let playerName = '';
-	import Avatar from './Avatar.svelte';
+	// import Avatar from './Avatar.svelte';
 	import { isNewDate, getResultColor } from './utils';
 </script>
 
@@ -14,10 +14,10 @@
 		<div class="match-row">
 			<div class="match-cell no-break right-align">
 				{playerName}
-				<Avatar name={playerName} size={20} />
+				<!-- <Avatar name={playerName} size={20} /> -->
 				<br />
 				<a class="player-name" href={`/#/player/${match.partner}`}>{match.partner}</a>
-				<Avatar name={match.partner} size={20} />
+				<!-- <Avatar name={match.partner} size={20} /> -->
 			</div>
 			<div
 				class="match-cell match-result"
@@ -31,7 +31,7 @@
 			<div class="match-cell no-break">
 				{#each match.opponents as opponent}
 					<span>
-						<Avatar name={opponent} size={20} />
+						<!-- <Avatar name={opponent} size={20} /> -->
 						<a class="player-name" href={`/#/player/${opponent}`}>{opponent}</a>
 					</span><br />
 				{/each}
@@ -58,8 +58,8 @@
 	}
 	.match-row {
 		display: grid;
-		grid-template-columns: 2fr 80px 2fr 60px 60px;
-		padding: 10px;
+		grid-template-columns: 2fr 60px 2fr 44px 44px;
+		padding: 4px;
 		border-bottom: 1px solid #ddd;
 		align-items: center;
 	}
@@ -78,7 +78,6 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		min-width: 80px;
 		height: 40px;
 	}
 	.match-result::before,
