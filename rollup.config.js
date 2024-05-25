@@ -8,9 +8,9 @@ import resolve from '@rollup/plugin-node-resolve';
 import livereload from 'rollup-plugin-livereload';
 import css from 'rollup-plugin-css-only';
 
-dotenv.config();
-
 const production = !process.env.ROLLUP_WATCH;
+
+dotenv.config({ path: production ? '.env.production' : '.env' });
 
 function serve() {
 	let server;
@@ -42,6 +42,10 @@ export default {
 		file: 'public/build/bundle.js'
 	},
 	plugins: [
+		replace({
+			'BASE_URL': JSON.stringify(process.env.BASE_URL),
+			preventAssignment: true // Add this to prevent errors with newer versions of rollup-plugin-replace
+		}),
 		svelte({
 			compilerOptions: {
 				// enable run-time checks when not in production
@@ -63,12 +67,6 @@ export default {
 			exportConditions: ['svelte']
 		}),
 		commonjs(),
-		replace({
-			'USE_LOCAL': JSON.stringify(process.env.USE_LOCAL),
-			'LOCAL_BASE_URL': JSON.stringify(process.env.LOCAL_BASE_URL),
-			'S3_BASE_URL': JSON.stringify(process.env.S3_BASE_URL),
-			preventAssignment: true // Add this to prevent errors with newer versions of rollup-plugin-replace
-		}),
 
 		// In dev mode, call `npm run start` once
 		// the bundle has been generated
