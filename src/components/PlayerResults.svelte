@@ -5,7 +5,7 @@
 	import { isNewDate, getResultColor } from './utils';
 </script>
 
-<div>
+<div class="match-container">
 	<h2>Match History</h2>
 	{#each matchHistory.reverse() as match, index}
 		{#if isNewDate(index, matchHistory)}
@@ -50,6 +50,12 @@
 </div>
 
 <style>
+	.match-container {
+		background: #f9f9f9;
+		padding: 20px;
+		border-radius: 8px;
+		box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+	}
 	.match-row {
 		display: grid;
 		grid-template-columns: 2fr 80px 2fr 60px 60px;

@@ -109,6 +109,7 @@
                     {/if}
                 {/each}
             </div> -->
+			<br />
 		</section>
 		<div class="grid-container">
 			<div class="match-container">
