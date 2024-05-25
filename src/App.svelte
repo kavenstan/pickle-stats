@@ -6,6 +6,5 @@
 </script>
 
 <main>
-	<h1>Pickleball Stats</h1>
 	<Router {routes} />
 </main>

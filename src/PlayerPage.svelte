@@ -1,164 +1,134 @@
 <script>
-	import { onMount } from 'svelte';
-	import { baseUrl } from './config';
-	export let params;
+    import { onMount } from 'svelte';
+    import { baseUrl } from './config';
+    import MatchHistory from './components/PlayerResults.svelte';
+    import Partnerships from './components/PlayerPartnerships.svelte';
+    import Opponents from './components/PlayerOpponents.svelte';
+    import Avatar from './components/Avatar.svelte';
+    import { formatName } from './components/utils';
 
-	let playerStats = {};
-	let matchHistory = [];
-	let playerName = params.player;
+    export let params;
 
-	let partnerStats = [];
-	let opponentStats = [];
+    let playerStats = {};
+    let matchHistory = [];
+    let playerName = params.player;
 
-	onMount(async () => {
-		const res = await fetch(`${baseUrl}/player_stats.json`);
-		const stats = await res.json();
-		playerStats = stats[playerName] || {};
-		matchHistory = playerStats.rating_history || [];
-		calculateAverageStats();
-	});
+    let partnerStats = [];
+    let opponentStats = [];
 
-	function calculateAverageStats() {
-		let tempPartnerStats = {};
-		let tempOpponentStats = {};
+    let totalGames = 0;
+    let gamesWon = 0;
+    let gamesLost = 0;
+    let gamesDrawn = 0;
+    let winPercentage = 0;
+    let lossPercentage = 0;
+    let drawPercentage = 0;
 
-		matchHistory.forEach((match) => {
-			const { rating_change, partner, opponents } = match;
+    onMount(async () => {
+        const res = await fetch(`${baseUrl}/player_stats.json`);
+        const stats = await res.json();
+        playerStats = stats[playerName] || {};
+        matchHistory = playerStats.rating_history || [];
+        calculateAverageStats();
+        calculateMatchStats();
+    });
 
-			// Track stats for partner
-			if (!tempPartnerStats[partner]) {
-				tempPartnerStats[partner] = { games: 0, totalGain: 0 };
-			}
-			tempPartnerStats[partner].games += 1;
-			tempPartnerStats[partner].totalGain += rating_change;
+    function calculateAverageStats() {
+        let tempPartnerStats = {};
+        let tempOpponentStats = {};
 
-			// Track stats for opponents
-			opponents.forEach((opponent) => {
-				if (!tempOpponentStats[opponent]) {
-					tempOpponentStats[opponent] = { games: 0, totalLoss: 0 };
-				}
-				tempOpponentStats[opponent].games += 1;
-				tempOpponentStats[opponent].totalLoss += rating_change;
-			});
-		});
+        matchHistory.forEach((match) => {
+            const { rating_change, partner, opponents } = match;
 
-		partnerStats = Object.entries(tempPartnerStats)
-			.map(([partner, stats]) => ({
-				partner,
-				games: stats.games,
-				totalGain: stats.totalGain,
-				averageGain: stats.totalGain / stats.games
-			}))
-			.sort((a, b) => b.averageGain - a.averageGain);
+            // Track stats for partner
+            if (!tempPartnerStats[partner]) {
+                tempPartnerStats[partner] = { games: 0, totalGain: 0 };
+            }
+            tempPartnerStats[partner].games += 1;
+            tempPartnerStats[partner].totalGain += rating_change;
 
-		opponentStats = Object.entries(tempOpponentStats)
-			.map(([opponent, stats]) => ({
-				opponent,
-				games: stats.games,
-				totalLoss: stats.totalLoss,
-				averageLoss: stats.totalLoss / stats.games
-			}))
-			.sort((a, b) => a.averageLoss - b.averageLoss);
-	}
+            // Track stats for opponents
+            opponents.forEach((opponent) => {
+                if (!tempOpponentStats[opponent]) {
+                    tempOpponentStats[opponent] = { games: 0, totalLoss: 0 };
+                }
+                tempOpponentStats[opponent].games += 1;
+                tempOpponentStats[opponent].totalLoss += rating_change;
+            });
+        });
+
+        partnerStats = Object.entries(tempPartnerStats)
+            .map(([partner, stats]) => ({
+                partner,
+                games: stats.games,
+                totalGain: stats.totalGain,
+                averageGain: stats.totalGain / stats.games
+            }))
+            .sort((a, b) => b.averageGain - a.averageGain);
+
+        opponentStats = Object.entries(tempOpponentStats)
+            .map(([opponent, stats]) => ({
+                opponent,
+                games: stats.games,
+                totalLoss: stats.totalLoss,
+                averageLoss: stats.totalLoss / stats.games
+            }))
+            .sort((a, b) => a.averageLoss - b.averageLoss);
+    }
+
+    function calculateMatchStats() {
+        totalGames = matchHistory.length;
+        gamesWon = matchHistory.filter(match => match.score > match.opponent_score).length;
+        gamesLost = matchHistory.filter(match => match.score < match.opponent_score).length;
+        gamesDrawn = matchHistory.filter(match => match.score === match.opponent_score).length;
+        winPercentage = Math.round((gamesWon / totalGames) * 100);
+        lossPercentage = Math.round((gamesLost / totalGames) * 100);
+        drawPercentage = Math.round((gamesDrawn / totalGames) * 100);
+    }
 </script>
 
 <main>
-	{#if playerStats.current_rating}
-		<h1>{playerName} ({playerStats.current_rating.toFixed(0)})</h1>
-		<section>
-			<h2>Match History</h2>
-			<table>
-				<thead>
-					<tr>
-						<th>Date</th>
-						<th>Partner</th>
-						<th>Score</th>
-						<th>Opponents</th>
-						<th>Rating</th>
-						<th>Change</th>
-					</tr>
-				</thead>
-				<tbody>
-					{#each matchHistory.reverse() as match}
-						<tr>
-							<td>{match.date}</td>
-							<td>{match.partner}</td>
-							<td>{match.score} - {match.opponent_score}</td>
-							<td>{match.opponents.join(', ')}</td>
-							<td>{match.rating}</td>
-							<td>{match.rating_change}</td>
-						</tr>
-					{/each}
-				</tbody>
-			</table>
-		</section>
-		<section>
-			<h2>Partnerships</h2>
-			<table>
-				<thead>
-					<tr>
-						<th>Partner</th>
-						<th>Games Played</th>
-						<th>Average Rating Change</th>
-						<th>Total Rating Change</th>
-					</tr>
-				</thead>
-				<tbody>
-					{#each partnerStats as { partner, games, totalGain, averageGain }}
-						<tr>
-							<td>{partner}</td>
-							<td>{games}</td>
-							<td>{averageGain.toFixed(2)}</td>
-							<td>{totalGain.toFixed(0)}</td>
-						</tr>
-					{/each}
-				</tbody>
-			</table>
-		</section>
-		<section>
-			<h2>Opponents</h2>
-			<table>
-				<thead>
-					<tr>
-						<th>Opponent</th>
-						<th>Games Played</th>
-						<th>Average Rating Change</th>
-						<th>Total Rating Change</th>
-					</tr>
-				</thead>
-				<tbody>
-					{#each opponentStats as { opponent, games, totalLoss, averageLoss }}
-						<tr>
-							<td>{opponent}</td>
-							<td>{games}</td>
-							<td>{averageLoss.toFixed(2)}</td>
-							<td>{totalLoss.toFixed(0)}</td>
-						</tr>
-					{/each}
-				</tbody>
-			</table>
-		</section>
-	{:else}
-		<p>No data available for {playerName}.</p>
-	{/if}
+    {#if playerStats.current_rating}
+        <h1><Avatar name={playerName} size={50} /> {formatName(playerName)} ({playerStats.current_rating.toFixed(0)})</h1>
+        <section>
+            <h2>Match Stats</h2>
+            <div>Played: {totalGames}</div>
+            <div>Won: {gamesWon} ({winPercentage}%)</div>
+            <div>Lost: {gamesLost} ({lossPercentage}%)</div>
+            <div>Drawn: {gamesDrawn} ({drawPercentage}%)</div>
+            <!-- <div>
+                Form: 
+                {#each matchHistory.slice(-10) as match}
+                    {#if match.score > match.opponent_score}
+                        <span class="arrow-up">▲</span>
+                    {:else if match.score < match.opponent_score}
+                        <span class="arrow-down">▼</span>
+                    {/if}
+                {/each}
+            </div> -->
+        </section>
+        <MatchHistory {matchHistory} {playerName}/>
+        <Partnerships {partnerStats} />
+        <Opponents {opponentStats} />
+    {:else}
+        <p>No data available for {playerName}.</p>
+    {/if}
 </main>
 
 <style>
-	table {
-		width: 100%;
-		border-collapse: collapse;
-		margin-bottom: 20px;
-	}
-	th,
-	td {
-		padding: 10px;
-		text-align: left;
-		border-bottom: 1px solid #ddd;
-	}
-	th {
-		background-color: #f2f2f2;
-	}
-	tr:hover {
-		background-color: #f5f5f5;
-	}
+    main {
+        padding: 20px;
+    }
+    h1 {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    .arrow-up {
+        color: green;
+        margin-left: 5px;
+    }
+    .arrow-down {
+        color: red;
+        margin-left: 5px;
+    }
 </style>

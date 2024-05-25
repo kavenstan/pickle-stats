@@ -1,15 +1,28 @@
+
 <script>
-	import { onMount } from 'svelte';
-	import { baseUrl, useLocal } from './config';
+    import { onMount } from 'svelte';
+	import { baseUrl } from './config';
+    import Rankings from './components/Rankings.svelte';
+    import Results from './components/Results.svelte';
 
 	let playerRatings = [];
+	let recentMatches = [];
+	let dataLoaded = false;
 
-	console.log(`Use Local: ${useLocal}`);
-	console.log(`Base URL: ${baseUrl}`);
-
-	onMount(async () => {
+	async function fetchRatings() {
 		const ratingsRes = await fetch(`${baseUrl}/player_ratings.json`);
 		playerRatings = await ratingsRes.json();
+    }
+
+    async function fetchMatches() {
+		const matchesRes = await fetch(`${baseUrl}/match_results.json`);
+		recentMatches = await matchesRes.json();
+    }
+
+	onMount(async () => {
+		fetchRatings();
+		fetchMatches();
+		dataLoaded = true;
 	});
 
 	let sortedRatings = [];
@@ -17,60 +30,56 @@
 		.sort(([, ratingA], [, ratingB]) => ratingB - ratingA)
 		.map(([player, rating]) => ({ player, rating }));
 
-	function navigateToPlayerPage(player) {
-		window.location.href = `/#/player/${player}`;
-	}
 </script>
 
-<main>
-	<h1>Pickleball Stats</h1>
-	<section>
-		<h2>Latest Ratings</h2>
-		<ul>
-			{#each sortedRatings as { player, rating }}
-				<!-- svelte-ignore a11y-click-events-have-key-events -->
-				<li on:click={() => navigateToPlayerPage(player)}>
-					{player}: {rating}
-				</li>
-			{/each}
-		</ul>
-	</section>
-</main>
-
 <style>
-	main {
-		text-align: center;
-		padding: 1em;
-		max-width: 240px;
-		margin: 0 auto;
+    main {
+        padding: 20px;
+    }
+    h1 {
+        text-align: center;
+    }
+    .grid-container {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 20px;
+    }
+	.rankings-container {
+		min-width: 350px;
 	}
-
-	h1 {
-		color: #ff3e00;
-		text-transform: uppercase;
-		font-size: 4em;
-		font-weight: 100;
-	}
-
-	@media (min-width: 640px) {
-		main {
-			max-width: none;
-		}
-	}
-
-	ul {
-		list-style-type: none;
-		padding: 0;
-	}
-	li {
-		padding: 10px;
-		margin: 5px 0;
-		background-color: #f0f0f0;
-		border-radius: 5px;
-		cursor: pointer;
-		transition: background-color 0.3s;
-	}
-	li:hover {
-		background-color: #e0e0e0;
-	}
+    @media (max-width: 600px) {
+        .rankings-container, .matches-container {
+            grid-column: span 12;
+        }
+    }
+    @media (min-width: 601px) and (max-width: 1024px) {
+        .rankings-container {
+            grid-column: span 5;
+        }
+        .matches-container {
+            grid-column: span 7;
+        }
+    }
+    @media (min-width: 1025px) {
+        .rankings-container {
+            grid-column: span 4;
+        }
+        .matches-container {
+            grid-column: span 8;
+        }
+    }
 </style>
+
+<main>
+    <h1>Pickle Stats</h1>
+    <div class="grid-container">
+		{#if dataLoaded}
+        <div class="rankings-container">
+            <Rankings {sortedRatings} {recentMatches} />
+        </div>
+        <div class="matches-container">
+            <Results {recentMatches} />
+        </div>
+		{/if}
+    </div>
+</main>
