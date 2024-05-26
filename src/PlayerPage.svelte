@@ -1,11 +1,12 @@
 <script>
 	import { onMount } from 'svelte';
-	import { baseUrl } from './config';
+	import { baseUrl } from './utils/config';
 	import MatchHistory from './components/PlayerResults.svelte';
 	import Partnerships from './components/PlayerPartnerships.svelte';
 	import Opponents from './components/PlayerOpponents.svelte';
 	import Avatar from './components/Avatar.svelte';
-	import { formatName } from './components/utils';
+	import { formatName } from './utils/utils';
+	import { fetchPlayerStats } from './api/api';
 
 	export let params;
 
@@ -25,8 +26,7 @@
 	let drawPercentage = 0;
 
 	onMount(async () => {
-		const res = await fetch(`${baseUrl}/player_stats.json`);
-		const stats = await res.json();
+		const stats = await fetchPlayerStats();
 		playerStats = stats[playerName] || {};
 		matchHistory = playerStats.rating_history || [];
 		calculateAverageStats();

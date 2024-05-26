@@ -2,7 +2,7 @@
 	export let matchHistory = [];
 	export let playerName = '';
 	// import Avatar from './Avatar.svelte';
-	import { isNewDate, getResultColor } from './utils';
+	import { isNewDate, getResultColor } from '../utils/utils';
 </script>
 
 <div class="match-container">

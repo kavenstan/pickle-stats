@@ -1,6 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
-	import { baseUrl } from './config';
+	import { fetchRatings, fetchMatches } from './api/api';
+	import { sortByRating } from './utils/utils';
 	import Rankings from './components/Rankings.svelte';
 	import Results from './components/Results.svelte';
 
@@ -8,26 +9,14 @@
 	let recentMatches = [];
 	let dataLoaded = false;
 
-	async function fetchRatings() {
-		const ratingsRes = await fetch(`${baseUrl}/player_ratings.json`);
-		playerRatings = await ratingsRes.json();
-	}
-
-	async function fetchMatches() {
-		const matchesRes = await fetch(`${baseUrl}/match_results.json`);
-		recentMatches = await matchesRes.json();
-	}
-
 	onMount(async () => {
-		fetchRatings();
-		fetchMatches();
+		playerRatings = await fetchRatings();
+		recentMatches = await fetchMatches();
 		dataLoaded = true;
 	});
 
 	let sortedRatings = [];
-	$: sortedRatings = Object.entries(playerRatings)
-		.sort(([, ratingA], [, ratingB]) => ratingB - ratingA)
-		.map(([player, rating]) => ({ player, rating }));
+	$: sortedRatings = sortByRating(playerRatings);
 </script>
 
 <main>

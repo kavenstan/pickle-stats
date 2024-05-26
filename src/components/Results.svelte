@@ -1,6 +1,6 @@
 <script>
-	import Avatar from './Avatar.svelte';
-	import { isNewDate, getResultColor } from './utils';
+	// import Avatar from './Avatar.svelte';
+	import { isNewDate, getResultColor } from '../utils/utils';
 	export let recentMatches = [];
 </script>
 
