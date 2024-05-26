@@ -4,6 +4,7 @@
 	import { generateMatches } from './utils/matchmaker';
 	import { selectedPlayers } from './store/store';
 	import { get } from 'svelte/store';
+	import { updateRatings } from './utils/elo';
 
 	let players = [];
 	let playerRatings = [];
@@ -17,6 +18,7 @@
 	let amountCourts = 4;
 	let showSettings = true;
 	let showRatings = true;
+	let maxExpansionRetries = 20;
 
 	onMount(async () => {
 		playerRatings = await fetchRatings();
@@ -51,7 +53,8 @@
 				sitOutCounts,
 				maxTeamAvgDiff,
 				maxPlayerDiff,
-				amountCourts
+				amountCourts,
+				maxExpansionRetries
 			);
 			matchResults = result.matches;
 			sittingOutPlayers = result.sittingOutPlayers;
@@ -64,19 +67,23 @@
 	}
 
 	function setMatchScore(match, team1Score, team2Score) {
-		match.team1Score = team1Score;
-		match.team2Score = team2Score;
-		if (
-			matchResults.every(
-				(match) => match.team1Score !== undefined && match.team2Score !== undefined
-			)
-		) {
-			pastMatches = pastMatches.concat(matchResults);
-		}
+		match.team1Score = team1Score ?? 0;
+		match.team2Score = team2Score ?? 0;
 	}
 
 	function toggleSettings() {
 		showSettings = !showSettings;
+	}
+
+	function nextRound() {
+		let matchesWithResults = matchResults.filter(
+			(match) => match.team1Score !== undefined || match.team2Score !== undefined
+		);
+		pastMatches = pastMatches.concat(matchesWithResults);
+
+		const updatedRatings = updateRatings(matchesWithResults, playerRatings);
+		playerRatings = updatedRatings;
+		generateMatchesHandler();
 	}
 
 	// selectedPlayers.subscribe(($selectedPlayers) => {
@@ -103,19 +110,25 @@
 			<div>
 				<label>
 					Max team average rating difference:
-					<input type="number" bind:value={maxTeamAvgDiff} min="0" />
+					<input type="number" bind:value={maxTeamAvgDiff} min="10" />
 				</label>
 			</div>
 			<div>
 				<label>
 					Max player rating difference:
-					<input type="number" bind:value={maxPlayerDiff} min="0" />
+					<input type="number" bind:value={maxPlayerDiff} min="10" />
+				</label>
+			</div>
+			<div>
+				<label>
+					Max retries (Extending criteria):
+					<input type="number" bind:value={maxExpansionRetries} min="0" max="50" />
 				</label>
 			</div>
 			<div>
 				<label>
 					Courts:
-					<input type="number" bind:value={amountCourts} min="1" />
+					<input type="number" bind:value={amountCourts} min="1" max="10" />
 				</label>
 			</div>
 			<div>
@@ -188,7 +201,7 @@
 	<!-- {#if matchResults.length > 0 && matchResults.every((match) => match.team1Score !== undefined || match.team2Score !== undefined)} -->
 	{#if matchResults.length > 0}
 		<div class="next-round-container">
-			<button class="button" on:click={generateMatchesHandler}> Next Round </button>
+			<button class="button" on:click={nextRound}> Next Round </button>
 		</div>
 	{/if}
 </main>

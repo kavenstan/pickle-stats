@@ -1,14 +1,19 @@
-export function generateMatches(players, pastMatches, sitOutCounts, maxTeamAvgDiff, maxPlayerDiff, amountCourts, minIterations = 1000, maxIterations = 1000) {
+export function generateMatches(players, pastMatches, sitOutCounts, maxTeamAvgDiff, maxPlayerDiff, amountCourts, maxExpansionRetries = 20) {
     if (players.length < 4) {
         throw new Error('Not enough players to generate matches.');
     }
+
+    let minIterations = 1000;
+    const maxIterations = 1000;
+    const maxExpansionRetriesLimit = 50;
     if (minIterations >= maxIterations) {
         minIterations = maxIterations - 1;
     }
-
+    if (maxExpansionRetries > maxExpansionRetriesLimit) {
+        maxExpansionRetries = maxExpansionRetriesLimit;
+    }
     let iterations = 0;
     let iterationRetries = 0;
-    let maxIterationRetries = 10;
     let matches = [];
     let smallestRatingDifference = Infinity;
 
@@ -49,7 +54,7 @@ export function generateMatches(players, pastMatches, sitOutCounts, maxTeamAvgDi
 
 
             if (differenceRange < smallestRatingDifference) {
-                console.log("New best difference", differenceRange);
+                // console.log("New best difference", differenceRange);
                 smallestRatingDifference = differenceRange;
                 matches = potentialMatches;
             }
@@ -62,7 +67,7 @@ export function generateMatches(players, pastMatches, sitOutCounts, maxTeamAvgDi
         }
 
         if (iterations == maxIterations) {
-            if (iterationRetries < maxIterationRetries) {
+            if (iterationRetries < maxExpansionRetries) {
                 console.log("Broadening Search Criteria... (+10)");
                 iterations = 0;
                 maxTeamAvgDiff += 10;
