@@ -6,6 +6,7 @@
 	import { get } from 'svelte/store';
 	import { updateRatings } from './utils/elo';
 	import { Button } from 'svelte-ux';
+	import Pill from './components/Pill.svelte';
 
 	let players = [];
 	let playerRatings = [];
@@ -94,18 +95,24 @@
 <main>
 	<div class="header">
 		<h1>Matchmaking</h1>
-		<Button on:click={toggleSettings}>⚙️</Button>
+		<Button variant="outlined" color="primary" class="px-4" on:click={toggleSettings}
+			>Settings ⚙️</Button
+		>
 	</div>
 	{#if showSettings}
 		<div class="settings">
 			<div>
 				{#each players as player}
-					<span
+					<Pill
+						on:click={() => togglePlayerSelection(player.name)}
+						selected={$selectedPlayers.has(player.name)}>{player.name}</Pill
+					>
+					<!-- <span
 						class="pill {$selectedPlayers.has(player.name) ? 'selected' : ''}"
 						on:click={() => togglePlayerSelection(player.name)}
 					>
 						{player.name}
-					</span>
+					</span> -->
 				{/each}
 			</div>
 			<div>
@@ -142,9 +149,9 @@
 	{/if}
 
 	{#if matchResults.length === 0}
-		<button class="button" on:click={generateMatchesHandler} disabled={$selectedPlayers.size < 4}>
+		<Button on:click={generateMatchesHandler} disabled={$selectedPlayers.size < 4}>
 			Generate Matches
-		</button>
+		</Button>
 	{/if}
 
 	{#if matchResults.length > 0}
@@ -193,46 +200,21 @@
 		<div class="sitting-out">
 			<h2>Sitting Out</h2>
 			{#each sittingOutPlayers as player}
-				<span class="pill selected">
+				<Pill>
 					{player.name}
-				</span>
+				</Pill>
 			{/each}
 		</div>
 	{/if}
 	<!-- {#if matchResults.length > 0 && matchResults.every((match) => match.team1Score !== undefined || match.team2Score !== undefined)} -->
 	{#if matchResults.length > 0}
 		<div class="next-round-container">
-			<button class="button" on:click={nextRound}> Next Round </button>
+			<Button on:click={nextRound}>Next Round</Button>
 		</div>
 	{/if}
 </main>
 
 <style>
-	.pill {
-		display: inline-block;
-		padding: 10px 20px;
-		margin: 5px;
-		border-radius: 20px;
-		background-color: grey;
-		color: white;
-		cursor: pointer;
-	}
-	.pill.selected {
-		background-color: skyblue;
-	}
-	.button {
-		padding: 10px 20px;
-		margin-top: 20px;
-		background-color: #007bff;
-		color: white;
-		border: none;
-		border-radius: 5px;
-		cursor: pointer;
-	}
-	.button:disabled {
-		background-color: #cccccc;
-		cursor: not-allowed;
-	}
 	.match-grid {
 		display: grid;
 		grid-template-columns: 1fr 150px 1fr;
@@ -273,13 +255,6 @@
 	}
 	.settings {
 		margin-bottom: 20px;
-	}
-	.settings-button {
-		padding: 10px;
-		background-color: transparent;
-		border: none;
-		font-size: 24px;
-		cursor: pointer;
 	}
 	.next-round-container {
 		display: flex;

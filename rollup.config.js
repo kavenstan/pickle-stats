@@ -6,7 +6,8 @@ import dotenv from 'dotenv';
 import terser from '@rollup/plugin-terser';
 import resolve from '@rollup/plugin-node-resolve';
 import livereload from 'rollup-plugin-livereload';
-import css from 'rollup-plugin-css-only';
+import sveltePreprocess from 'svelte-preprocess';
+import postcss from 'rollup-plugin-postcss';
 
 const production = !process.env.ROLLUP_WATCH;
 
@@ -43,18 +44,22 @@ export default {
 	},
 	plugins: [
 		replace({
-			'BASE_URL': JSON.stringify(process.env.BASE_URL),
+			'process.env.NODE_ENV': JSON.stringify(production ? 'production' : 'development'),
+			BASE_URL: JSON.stringify(process.env.BASE_URL),
 			preventAssignment: true // Add this to prevent errors with newer versions of rollup-plugin-replace
 		}),
 		svelte({
+			preprocess: sveltePreprocess({
+				postcss: true
+			}),
 			compilerOptions: {
 				// enable run-time checks when not in production
 				dev: !production
 			}
 		}),
-		// we'll extract any component CSS out into
-		// a separate file - better for performance
-		css({ output: 'bundle.css' }),
+		postcss({
+			extract: true
+		}),
 
 		// If you have external dependencies installed from
 		// npm, you'll most likely need these plugins. In

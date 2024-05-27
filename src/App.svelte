@@ -1,10 +1,23 @@
 <script>
 	import Router from 'svelte-spa-router';
 	import { routes } from './routes';
-
-	// You might want to fetch initial data here if necessary
+	import MainLayout from './layout/MainLayout.svelte';
 </script>
 
-<main>
-	<Router {routes} />
-</main>
+<MainLayout title="Pickle Stats">
+	<main>
+		<Router {routes} />
+	</main>
+</MainLayout>
+
+<style global lang="postcss">
+	main {
+		max-width: 1400px;
+		margin: 0 auto;
+		padding: 1rem;
+	}
+	@import './global.css';
+	@tailwind base;
+	@tailwind components;
+	@tailwind utilities;
+</style>
