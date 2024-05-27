@@ -5,6 +5,7 @@
 	import { selectedPlayers } from './store/store';
 	import { get } from 'svelte/store';
 	import { updateRatings } from './utils/elo';
+	import { Button } from 'svelte-ux';
 
 	let players = [];
 	let playerRatings = [];
@@ -93,7 +94,7 @@
 <main>
 	<div class="header">
 		<h1>Matchmaking</h1>
-		<button class="settings-button" on:click={toggleSettings}> ⚙️ </button>
+		<Button on:click={toggleSettings}>⚙️</Button>
 	</div>
 	{#if showSettings}
 		<div class="settings">

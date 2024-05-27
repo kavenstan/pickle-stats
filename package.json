@@ -21,7 +21,9 @@
     "svelte": "^3.55.0"
   },
   "dependencies": {
+    "firebase": "^10.12.1",
     "sirv-cli": "^2.0.0",
-    "svelte-spa-router": "^4.0.1"
+    "svelte-spa-router": "^4.0.1",
+    "svelte-ux": "^0.64.1"
   }
 }
